@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+
+<mapper namespace="com.mapper.ArticleMapper">
+	<sql id="cols">
+	    article_id, article_user_id, article_title, article_content,article_summary, article_view_count, article_comment_count, 
+   		article_like_count, article_create_time,article_update_time, article_is_comment, article_status, article_order			   
+	</sql>
+	<!-- 新增文章 -->
+	<insert id="addArticle" parameterType="Article" useGeneratedKeys="true" keyProperty="articleId">
+				    insert into article
+			        (article_user_id, article_title,
+			        article_view_count, article_comment_count,
+			        article_like_count, article_create_time, article_update_time,
+			        article_is_comment, article_status, article_order,
+			        article_content, article_summary)
+			        values (#{articleUserId},
+			         #{articleTitle},
+			        #{articleViewCount},
+			        #{articleCommentCount},
+			        #{articleLikeCount}, 
+			        #{articleCreateTime},
+			        #{articleUpdateTime},
+			        #{articleIsComment},
+			        #{articleStatus}, 
+			        #{articleOrder},
+			        #{articleContent},
+			        #{articleSummary})
+				</insert>
+	
+	
+	<!-- 查询最新发布的前n条文章, 注意.草稿不要查出来  article_status=0 代表它是草稿-->
+	<select id="listRecentArticle"   resultType="Article">
+	    select  <include refid="cols" /> from article  where article_status!=0 order by article_id desc limit #{n} 
+	</select>
+	<!-- 根据文章id,查询文章信息 -->
+	<select id="getArticleById"    resultType="Article">
+		select  <include refid="cols" /> from article  where article_id=#{id}
+	</select>
+	<select id="findAll"  resultType="Article">
+		select <include refid="cols" /> from article  order by article_order desc,article_id desc 
+	</select>
+	<!-- 根据文章id,查询文章属于哪些分类 -->
+	<select id="listCategoryByArticleId" resultType="Category">
+		select * from category where category_id in(select category_id from article_category_ref where article_id=#{articleId} )
+	</select>
+	
+	<!-- 往文章分类表中添加数据 -->
+	<insert id="addArticleCategory">
+		insert into article_category_ref (article_id,category_id)  values (#{articleId}, #{categoryId}) 
+	</insert>
+				
+	<!-- 往文章标签表中添加数据 -->
+	<insert id="addArticleTag">
+		insert into article_tag_ref (article_id,tag_id)  values (#{articleId}, #{tagId}) 
+	</insert>
+</mapper>
